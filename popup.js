@@ -7,8 +7,50 @@ function fallbackResumeMatchAnalysis(jobDetails) {
 - Manual review recommended`;
 }
 
+// Global variable to store job details
+let currentJobDetails = null;
+
+// Function to extract job details from the current tab
+function extractJobDetails() {
+  return new Promise((resolve, reject) => {
+    chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
+      // inject content script
+      chrome.scripting.executeScript({
+        target: {tabId: tabs[0].id},
+        files: ['content.js']
+      }, () => {
+        // send message after script injection
+        chrome.tabs.sendMessage(tabs[0].id, {action: "extractJobDetails"}, (response) => {
+          if (chrome.runtime.lastError) {
+            console.error('Runtime error:', chrome.runtime.lastError);
+            reject(chrome.runtime.lastError);
+            return;
+          }
+
+          if (response && response.jobDetails) {
+            resolve(response.jobDetails);
+          } else {
+            reject(new Error('No job details found'));
+          }
+        });
+      });
+    });
+  });
+}
+
 // Function to match resume against job description
-async function matchResumeToJobDescription(jobDetails) {
+async function matchResumeToJobDescription() {
+  // First, extract job details silently
+  try {
+    currentJobDetails = await extractJobDetails();
+  } catch (error) {
+    console.error('Error extracting job details:', error);
+    document.getElementById('jobDetails').innerHTML = `
+      <p>Could not extract job details. Error: ${error.message}</p>
+    `;
+    return;
+  }
+
   try {
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -21,24 +63,25 @@ async function matchResumeToJobDescription(jobDetails) {
         messages: [
           {
             role: "system", 
-            content: "You are a professional career coach comparing a resume to a job description."
+            content: "You are a software engineering recruiter providing concise, bullet-pointed reports comparing a resume skills summary to a job description."
           },
           {
             role: "user",
-            content: `Analyze this job description and provide a detailed match report against a standard software engineering resume:
+            content: `Analyze this job description and provide a concise match report against a resume skills summary:
 
 Job Description:
-${jobDetails.description}
+"""
+${currentJobDetails.description}
+"""
 
 Resume Skills Summary:
 - SKILLS: Java, Spring Boot, Python, PyTorch, Pandas, PHP, Node.js, Javascript, React, LitElement, jQuery, Git, CSS, HTML, MySQL, DynamoDB, Hive, HQL+, Airflow, Docker, Grails, Gradle, Groovy, Android SDK
 - CERTIFICATION: Udacity Nanodegree - AI Programming with Python, Baeldung Certificate - Java Spring, AWS Certified Developer – Associate
 
-Please provide:
-1. Overall Match Percentage
-2. Strengths (Where skills closely align)
-3. Potential Skill Gaps
-4. Recommendations for improvement`
+Provide a **brief report** with the following:
+1. **Overall Match Percentage**: A single percentage value without explanation.
+2. **Strengths**: A list of skills and certifications from the resume that align with the job description.
+3. **Potential Skill Gaps**: A list of skills missing from the resume compared to the job description.`
           }
         ],
         max_tokens: 300,
@@ -69,74 +112,34 @@ Please provide:
       // Specific handling for quota/billing issues
       if (errorMessage.includes('quota') || errorMessage.includes('billing')) {
         console.error('OpenAI API Quota Error:', errorMessage);
-        return fallbackResumeMatchAnalysis(jobDetails);
+        return fallbackResumeMatchAnalysis(currentJobDetails);
       }
 
       console.error('OpenAI API Error:', errorMessage);
-      return fallbackResumeMatchAnalysis(jobDetails);
+      return fallbackResumeMatchAnalysis(currentJobDetails);
     }
 
     const data = JSON.parse(responseBody);
     
     if (data.choices && data.choices[0] && data.choices[0].message) {
-      return data.choices[0].message.content;
+      const matchResult = data.choices[0].message.content;
+      
+      // Create and append match result
+      const matchDiv = document.createElement('div');
+      matchDiv.innerHTML = `<h3>Resume Match Report</h3><pre>${matchResult}</pre>`;
+      document.getElementById('jobDetails').appendChild(matchDiv);
+      
+      return matchResult;
     } else {
-      return fallbackResumeMatchAnalysis(jobDetails);
+      return fallbackResumeMatchAnalysis(currentJobDetails);
     }
   } catch (error) {
     console.error('Full Resume Match API Error:', error);
-    return fallbackResumeMatchAnalysis(jobDetails);
+    return fallbackResumeMatchAnalysis(currentJobDetails);
   }
 }
 
-document.getElementById('extractBtn').addEventListener('click', () => {
-  chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
-    // inject content script
-    chrome.scripting.executeScript({
-      target: {tabId: tabs[0].id},
-      files: ['content.js']
-    }, () => {
-      // send message after script injection
-      chrome.tabs.sendMessage(tabs[0].id, {action: "extractJobDetails"}, async (response) => {
-        if (chrome.runtime.lastError) {
-          console.error('Runtime error:', chrome.runtime.lastError);
-          document.getElementById('jobDetails').innerHTML = `
-            <h3>Error</h3>
-            <p>Could not extract job details. Error: ${chrome.runtime.lastError.message}</p>
-          `;
-          return;
-        }
-
-        if (response && response.jobDetails) {
-          // Display job details
-          document.getElementById('jobDetails').innerHTML = `
-            <h3>Job Details:</h3>
-            <pre>${JSON.stringify(response.jobDetails, null, 2)}</pre>
-          `;
-
-          // Add Resume Match Button
-          const analysisContainer = document.createElement('div');
-          
-          // Resume Match Button
-          const resumeMatchBtn = document.createElement('button');
-          resumeMatchBtn.textContent = 'Match Resume';
-          resumeMatchBtn.onclick = async () => {
-            const matchResult = await matchResumeToJobDescription(response.jobDetails);
-            const matchDiv = document.createElement('div');
-            matchDiv.innerHTML = `
-              <h3>Resume Match Report</h3>
-              <pre>${matchResult}</pre>
-            `;
-            analysisContainer.appendChild(matchDiv);
-          };
-          analysisContainer.appendChild(resumeMatchBtn);
-
-          // Append buttons to job details
-          document.getElementById('jobDetails').appendChild(analysisContainer);
-        } else {
-          document.getElementById('jobDetails').innerHTML = 'No job details found.';
-        }
-      });
-    });
-  });
+// Add event listener to the static Match Resume button
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('resumeMatchBtn').addEventListener('click', matchResumeToJobDescription);
 });
