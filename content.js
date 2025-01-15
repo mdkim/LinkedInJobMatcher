@@ -2,7 +2,7 @@ function extractLinkedInJobDetails() {
   // LinkedIn job details selector (may need adjustment based on their current HTML structure)
   const jobTitleEl = document.querySelector('.job-details-jobs-unified-top-card__job-title');
   const companyNameEl = document.querySelector('.job-details-jobs-unified-top-card__company-name');
-  const locationEl = document.querySelector('.job-details-jobs-unified-top-card__location');
+  const locationEl = document.querySelector('.job-details-jobs-unified-top-card__primary-description-container .tvm__text--low-emphasis');
   const jobDescriptionEl = document.querySelector('.jobs-description__container');
 
   return {
