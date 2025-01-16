@@ -65,8 +65,11 @@
 <body>
   <div>
     <h2>LinkedIn Job Skills Matcher</h2>
+    <div style="display: flex; align-items: center;">
+      <button id="resumeMatchBtn">Match Resume</button>
+      <img src="images/spinner.gif" alt="Loading..." id="loadingSpinner" style="display: none; width: 60px; height: 60px">
+    </div>
     <div id="jobDetails"></div>
-    <button id="resumeMatchBtn">Match Resume</button>
     <button id="closePopupBtn">Close Popup</button>
   </div>
   <script src="popup.js"></script>

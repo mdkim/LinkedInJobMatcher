@@ -50,10 +50,13 @@ function extractJobDetails() {
 
 // Function to match resume against job description
 async function matchResumeToJobDescription() {
+  loadingSpinner.style.display = 'block';
+
   // First, extract job details silently
   try {
     currentJobDetails = await extractJobDetails();
   } catch (error) {
+    loadingSpinner.style.display = 'none';
     console.error('Error extracting job details:', error);
     document.getElementById('jobDetails').style.display = 'block';
     document.getElementById('jobDetails').innerHTML = `
@@ -78,7 +81,7 @@ async function matchResumeToJobDescription() {
           },
           {
             role: "user",
-            content: `Analyze this job description and provide a concise match report against a resume skills summary:
+            content: `Analyze this job description and provide a concise match report against a resume skills summary, focusing on hard skills and specific high level skills:
 
 Job Description:
 """
@@ -86,23 +89,26 @@ ${currentJobDetails.description}
 """
 
 Resume Skills Summary:
-- SKILLS: Java, Spring Boot, Python, PyTorch, Pandas, PHP, Node.js, Javascript, React, LitElement, jQuery, Git, CSS, HTML, MySQL, DynamoDB, Hive, HQL+, Airflow, Docker, Grails, Gradle, Groovy, Android SDK
-- CERTIFICATION: Udacity Nanodegree - AI Programming with Python, Baeldung Certificate - Java Spring, AWS Certified Developer – Associate
+- SKILLS: Java, Spring Boot, Python, PyTorch, Pandas, PHP, Node.js, Javascript, React, LitElement, jQuery, REST API, Git, CSS, HTML, MySQL, DynamoDB, Hive, HQL+, Airflow, Docker, Grails, Gradle, Groovy, Android SDK
+- CERTIFICATION: Udacity Nanodegree - AI Programming with Python, Baeldung Certificate - Java Spring, AWS Certified Developer – Associate, AWS Serverless – Badge
 
 Provide a **brief report** with the following:
 1. **Overall Match Percentage**: A single percentage value without explanation.
-2. **Strengths**: A list of skills and certifications from the resume that align with the job description.
-3. **Potential Skill Gaps**: A list of skills missing from the resume compared to the job description.`
+2. **Skills Matches**: A list of skills and certifications from the resume that closely matches with the job description.
+3. **Skills Gaps**: A list of skills missing from the resume compared to the job description.
+4. **Additional notes**: Without being redundant with the report above, any other relevant information or observations you think would be helpful.`
           }
         ],
         max_tokens: 300,
-        temperature: 0.7
+        temperature: 0.3
       })
     });
 
     // Parse the response body
     const responseBody = await response.text();
     
+    loadingSpinner.style.display = 'none';
+
     // Extensive error logging
     console.group('OpenAI API Response for Resume Match Analysis');
     console.log('Response Status:', response.status);
