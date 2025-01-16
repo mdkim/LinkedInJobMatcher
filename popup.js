@@ -1,6 +1,16 @@
 // Hardcoded OpenAI API Key - REPLACE with your actual key
 const OPENAI_API_KEY = '';
 
+// Prevent popup from closing when clicking outside
+window.addEventListener('blur', (event) => {
+  event.preventDefault();
+  window.focus();
+});
+
+document.getElementById('closePopupBtn').addEventListener('click', () => {
+  window.close();
+});
+
 function fallbackResumeMatchAnalysis(jobDetails) {
   return `Fallback Resume Match Analysis: 
 - Unable to perform detailed analysis
@@ -45,6 +55,7 @@ async function matchResumeToJobDescription() {
     currentJobDetails = await extractJobDetails();
   } catch (error) {
     console.error('Error extracting job details:', error);
+    document.getElementById('jobDetails').style.display = 'block';
     document.getElementById('jobDetails').innerHTML = `
       <p>Could not extract job details. Error: ${error.message}</p>
     `;
@@ -124,10 +135,13 @@ Provide a **brief report** with the following:
     if (data.choices && data.choices[0] && data.choices[0].message) {
       const matchResult = data.choices[0].message.content;
       
-      // Create and append match result
+      // Create and replace match result
       const matchDiv = document.createElement('div');
-      matchDiv.innerHTML = `<h3>Resume Match Report</h3><pre>${matchResult}</pre>`;
-      document.getElementById('jobDetails').appendChild(matchDiv);
+      matchDiv.innerHTML = `
+        <h3>Resume Match Report</h3>${currentJobDetails.company || 'Unknown Company'}<pre>${matchResult}</pre>
+      `;
+      document.getElementById('jobDetails').innerHTML = matchDiv.innerHTML;
+      document.getElementById('jobDetails').style.display = 'block';
       
       return matchResult;
     } else {
