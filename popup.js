@@ -96,7 +96,7 @@ Provide a **brief report** with the following:
 1. **Overall Match Percentage**: A single percentage value without explanation.
 2. **Skills Matches**: A list of skills and certifications from the resume that closely matches with the job description.
 3. **Skills Gaps**: A list of skills missing from the resume compared to the job description.
-4. **Additional notes**: Without being redundant with the report above, any other relevant information or observations you think would be helpful.`
+4. **Additional notes**: Without being redundant with the report above, briefly list any other relevant information or observations not covered already.`
           }
         ],
         max_tokens: 300,

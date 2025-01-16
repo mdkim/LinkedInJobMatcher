@@ -1,4 +1,4 @@
-# Job Page Content Extractor Chrome Extension
+# LinkedIn Job Skills Matcher Chrome Extension
 
 ## Features
 - Extract job details from LinkedIn and other job sites
