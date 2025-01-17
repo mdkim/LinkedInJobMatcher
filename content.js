@@ -1,5 +1,4 @@
 function extractLinkedInJobDetails() {
-  // LinkedIn job details selector (may need adjustment based on their current HTML structure)
   const jobTitleEl = document.querySelector('.job-details-jobs-unified-top-card__job-title');
   const companyNameEl = document.querySelector('.job-details-jobs-unified-top-card__company-name');
   const locationEl = document.querySelector('.job-details-jobs-unified-top-card__primary-description-container .tvm__text--low-emphasis');
@@ -14,7 +13,6 @@ function extractLinkedInJobDetails() {
 }
 
 function extractGenericJobDetails() {
-  // More generic extraction for other job sites
   return {
     title: document.title,
     url: window.location.href,
@@ -25,12 +23,11 @@ function extractGenericJobDetails() {
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === "extractJobDetails") {
     let jobDetails;
-    
-    // Try LinkedIn-specific extraction first
+
+    // add to content_scripts.matches in manifest.json
     if (window.location.href.includes('linkedin.com/jobs')) {
       jobDetails = extractLinkedInJobDetails();
     } else {
-      // Fallback to generic extraction
       jobDetails = extractGenericJobDetails();
     }
 

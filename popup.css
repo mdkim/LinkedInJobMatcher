@@ -70,3 +70,6 @@ button {
   overflow-y: auto;
   display: none;
 }
+.error {
+  color: #f55;
+}

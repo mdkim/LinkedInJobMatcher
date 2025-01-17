@@ -5,7 +5,8 @@
   "description": "Extract job listing details from web pages",
   "permissions": [
     "activeTab",
-    "scripting"
+    "scripting",
+    "storage"
   ],
   "action": {
     "default_title": "Open LinkedIn Job Skills Matcher",
