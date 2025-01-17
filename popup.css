@@ -1,0 +1,72 @@
+body {
+  width: 400px;
+  min-height: 200px;
+  padding: 10px;
+  color: #e1e1db;
+  background-color: #181818;
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  font-size: 12px;
+}
+* { 
+  font-family: inherit;
+}
+.h2, .h3 {
+  margin-block-start: 0;
+}
+.h2 {
+  color: #598bdd;
+  font-size: 1.5em;
+  font-weight: bold;
+  margin-block-end: 5px;
+}
+.h3 {
+  font-size: 1.26em;
+  font-weight: bold;
+  margin-block-end: 0;
+}
+#closePopupBtn {
+  position: absolute;
+  top: 1.0rem;
+  right: 0.5rem;
+  width: 40px;
+  height: 32px;
+  cursor: pointer; 
+}
+button {
+  margin: 10px 0;
+  padding: 12px;
+  border: none;
+  border-radius: 5px;
+  background-color: #1d2294;
+  color: #e1e1db;
+  font-size: 1.12em;
+  font-weight: bold;
+  letter-spacing: 0.06em;
+  cursor: pointer; 
+  box-shadow: none;
+}
+.buttonRow {
+  display: flex;
+  align-items: center;
+}
+#loadingSpinner {
+  width: 60px;
+  height: 60px;
+  display: none;
+}
+.pre {
+  margin: 1em 0px;
+  font-size: 1.1em;
+  white-space: pre-wrap;
+  border-radius: 5px;
+  overflow-y: auto;
+}
+#matchReport {
+  margin: 5px 0;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  background-color: #222;
+  overflow-y: auto;
+  display: none;
+}

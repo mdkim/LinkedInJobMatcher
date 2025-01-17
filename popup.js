@@ -1,11 +1,4 @@
-// Hardcoded OpenAI API Key - REPLACE with your actual key
 const OPENAI_API_KEY = '';
-
-// Prevent popup from closing when clicking outside
-window.addEventListener('blur', (event) => {
-  event.preventDefault();
-  window.focus();
-});
 
 document.getElementById('closePopupBtn').addEventListener('click', () => {
   window.close();
@@ -17,10 +10,8 @@ function fallbackResumeMatchAnalysis(jobDetails) {
 - Manual review recommended`;
 }
 
-// Global variable to store job details
 let currentJobDetails = null;
 
-// Function to extract job details from the current tab
 function extractJobDetails() {
   return new Promise((resolve, reject) => {
     chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
@@ -29,7 +20,6 @@ function extractJobDetails() {
         target: {tabId: tabs[0].id},
         files: ['content.js']
       }, () => {
-        // send message after script injection
         chrome.tabs.sendMessage(tabs[0].id, {action: "extractJobDetails"}, (response) => {
           if (chrome.runtime.lastError) {
             console.error('Runtime error:', chrome.runtime.lastError);
@@ -48,20 +38,16 @@ function extractJobDetails() {
   });
 }
 
-// Function to match resume against job description
 async function matchResumeToJobDescription() {
   loadingSpinner.style.display = 'block';
 
-  // First, extract job details silently
   try {
     currentJobDetails = await extractJobDetails();
   } catch (error) {
     loadingSpinner.style.display = 'none';
     console.error('Error extracting job details:', error);
-    document.getElementById('jobDetails').style.display = 'block';
-    document.getElementById('jobDetails').innerHTML = `
-      <p>Could not extract job details. Error: ${error.message}</p>
-    `;
+    document.getElementById('matchReport').innerHTML = `<p>Could not extract job details. Error: ${error.message}</p>`;
+    document.getElementById('matchReport').style.display = 'block';
     return;
   }
 
@@ -104,19 +90,16 @@ Provide a **brief report** with the following:
       })
     });
 
-    // Parse the response body
     const responseBody = await response.text();
     
     loadingSpinner.style.display = 'none';
 
-    // Extensive error logging
     console.group('OpenAI API Response for Resume Match Analysis');
     console.log('Response Status:', response.status);
     console.log('Response Headers:', Object.fromEntries(response.headers.entries()));
     console.log('Response Body:', responseBody);
     console.groupEnd();
-    
-    // Check for specific error conditions
+
     if (!response.ok) {
       let errorMessage = 'Unknown API error occurred';
       try {
@@ -126,7 +109,7 @@ Provide a **brief report** with the following:
         console.error('Error parsing error response:', parseError);
       }
 
-      // Specific handling for quota/billing issues
+      // OpenAI API quota/billing issues
       if (errorMessage.includes('quota') || errorMessage.includes('billing')) {
         console.error('OpenAI API Quota Error:', errorMessage);
         return fallbackResumeMatchAnalysis(currentJobDetails);
@@ -140,14 +123,13 @@ Provide a **brief report** with the following:
     
     if (data.choices && data.choices[0] && data.choices[0].message) {
       const matchResult = data.choices[0].message.content;
-      
-      // Create and replace match result
+
       const matchDiv = document.createElement('div');
       matchDiv.innerHTML = `
-        <h3>Resume Match Report</h3>${currentJobDetails.company || 'Unknown Company'}<pre>${matchResult}</pre>
+        <div class="h3">Resume Match Report</div>${currentJobDetails.company || 'Unknown Company'}<div class="pre">${matchResult}</div>
       `;
-      document.getElementById('jobDetails').innerHTML = matchDiv.innerHTML;
-      document.getElementById('jobDetails').style.display = 'block';
+      document.getElementById('matchReport').innerHTML = matchDiv.innerHTML;
+      document.getElementById('matchReport').style.display = 'block';
       
       return matchResult;
     } else {
@@ -159,7 +141,7 @@ Provide a **brief report** with the following:
   }
 }
 
-// Add event listener to the static Match Resume button
+// resumeMatchBtn handler
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('resumeMatchBtn').addEventListener('click', matchResumeToJobDescription);
 });

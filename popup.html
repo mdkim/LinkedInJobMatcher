@@ -1,76 +1,18 @@
 <!DOCTYPE html>
-<html class="container">
+<html>
 <head>
   <title>LinkedIn Job Skills Matcher</title>
-  <style>
-    body {
-      width: 400px;
-      min-height: 200px;
-      padding: 10px;
-      color: #e1e1db;
-      font-family: ui-sans-serif, system-ui, sans-serif;
-      background-color: #181818;
-    }
-    * { 
-      font-family: inherit;
-    }
-    h2 {
-      color: #598bdd;
-    }
-    h2, h3 {
-      margin-block-start: 0;
-    }
-    h3 {
-      margin-block-end: 0;
-    }
-    button {
-      margin: 10px 0;
-      padding: 12px;
-      border: none;
-      border-radius: 5px;
-      background-color: #1d2294;
-      color: #e1e1db;
-      font-weight: bold;
-      letter-spacing: 0.06em;
-      cursor: pointer; 
-      box-shadow: none;
-    }
-    pre {
-      white-space: pre-wrap;
-      word-wrap: break-word;
-      font-size: 1.2em;
-    }
-    .container {
-      border: 1px solid #766e61;
-      border-radius: 5px;
-      box-sizing: border-box;
-    }
-    #jobDetails {
-      border: 1px solid #ddd;
-      padding: 10px;
-      overflow-y: auto;
-      display: none;
-    }
-    #closePopupBtn {
-      position: absolute;
-      opacity: 0;
-      top: 0;
-      left: 0;
-      width: 1px;
-      height: 1px;
-      z-index: -1;
-    }
-  </style>
+  <link rel="stylesheet" href="popup.css">
 </head>
 <body>
   <div>
-    <h2>LinkedIn Job Skills Matcher</h2>
-    <div style="display: flex; align-items: center;">
+    <div class="h2">LinkedIn Job Skills Matcher</div>
+    <div class="buttonRow">
       <button id="resumeMatchBtn">Match Resume</button>
-      <img src="images/spinner.gif" alt="Loading..." id="loadingSpinner" style="display: none; width: 60px; height: 60px">
+      <img src="images/spinner.gif" alt="Loading..." id="loadingSpinner">
     </div>
-    <div id="jobDetails"></div>
-    <button id="closePopupBtn">Close Popup</button>
+    <div id="matchReport"></div>
+    <img src="images/close.gif" id="closePopupBtn">
   </div>
   <script src="popup.js"></script>
 </body>
