@@ -4,6 +4,12 @@ loadApiKey((apiKey) => {
 });
 const API_URL = 'https://api.openai.com/v1/chat/completions';
 const MODEL = 'gpt-3.5-turbo';
+const DEBUG = true;
+
+function debugLog(...args) {
+  if (!DEBUG) return;
+  console.log(...args);
+}
 
 function loadApiKey(callback) {
   let OPENAI_API_KEY;
@@ -28,7 +34,10 @@ document.getElementById('closePopupBtn').addEventListener('click', () => {
 function handleError(message, error = new Error()) {
   console.error(message, error);
   document.getElementById('matchReport').style.display = 'block';
-  document.getElementById('matchReport').innerHTML = `<p class="error">${message}.<br>Error: ${error.message}</p>`;
+
+  const div = document.createElement('div');
+  div.innerHTML = `<p class="error">${message}<br>Error: ${error.message}</p>`;
+  document.getElementById('matchReport').appendChild(div);
 }
 
 function extractJobDetails() {
@@ -36,7 +45,7 @@ function extractJobDetails() {
     chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
       chrome.tabs.sendMessage(tabs[0].id, {action: "extractJobDetails"}, (response) => {
         if (chrome.runtime.lastError) {
-          console.error('Runtime error:', chrome.runtime.lastError);
+          handleError('Runtime error', chrome.runtime.lastError);
           reject(chrome.runtime.lastError);
           return;
         }
@@ -52,7 +61,7 @@ function extractJobDetails() {
 }
 
 async function fetchMatchReport(jobDetails) {
-  //console.log("Job Details: ", jobDetails);
+  debugLog("Job Details: ", jobDetails);
 
   const response = await fetch(API_URL, {
     method: 'POST',
@@ -93,20 +102,20 @@ Provide a brief report with the following sections:
   });
 
   const responseBody = await response.text();
-/*
+
   console.group('OpenAI API Response for Resume Match Analysis');
-  console.log('Response Status:', response.status);
-  console.log('Response Headers:', Object.fromEntries(response.headers.entries()));
-  console.log('Response Body:', responseBody);
+  debugLog('Response Status:', response.status);
+  debugLog('Response Headers:', Object.fromEntries(response.headers.entries()));
+  debugLog('Response Body:', responseBody);
   console.groupEnd();
-*/
+
   if (!response.ok) {
     let errorMessage = 'Unknown API error occurred';
     try {
       const errorJson = JSON.parse(responseBody);
       errorMessage = errorJson.error?.message || errorMessage;
     } catch (parseError) {
-      console.error('Error parsing error response:', parseError);
+      handleError('Error parsing error response', parseError);
     }
     return handleError(`OpenAI API Error: ${errorMessage}`);
   }
