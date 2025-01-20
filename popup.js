@@ -143,11 +143,34 @@ async function matchResumeToJobDescription() {
     }
 
     const matchResult = data.choices[0].message.content;
+    document.getElementById('matchReport').style.display = 'block';
+    document.getElementById('matchReport').innerHTML = "";
 
     const matchDiv = document.createElement('div');
-    matchDiv.innerHTML = formatMatchReport(jobDetails.company, matchResult);
-    document.getElementById('matchReport').innerHTML = matchDiv.innerHTML;
-    document.getElementById('matchReport').style.display = 'block';
+    matchDiv.id = 'matchDiv';
+    matchDiv.innerHTML = formatMatchReport(jobDetails.company, jobDetails.title, matchResult);
+    document.getElementById('matchReport').appendChild(matchDiv);
+    
+    const matchReportHTML = `<style>
+      .pre { column-count: 2; margin: 1em 0 0 0; font-size: 1.1em; white-space: pre-wrap; border-radius: 5px; overflow-y: auto; }
+      .h3 { font-size: 1.26em; font-weight: bold; }
+      #matchReport { margin: 5px 0; padding: 10px; border: 1px solid #ddd; border-radius: 5px; background-color: #222; overflow-y: auto; display: none; }
+      </style>
+    ` + document.getElementById('matchReport').outerHTML;
+
+    // inject match report into active tab
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      const activeTab = tabs[0];
+      chrome.tabs.sendMessage(activeTab.id,
+        { action: 'appendElement', matchReportHTML: matchReportHTML },
+        (response) => {
+          if (response?.success) {
+              debugLog(response.message);
+          } else {
+              handleError(response?.message || 'Failed to send message');
+          }
+      });
+    });
     
     return matchResult;
   } catch (error) {
@@ -157,10 +180,11 @@ async function matchResumeToJobDescription() {
   }
 }
 
-function formatMatchReport(company, matchResult) {
+function formatMatchReport(company, jobTitle, matchResult) {
   const matchResultMD = matchResult.replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>");
   return `
-    <div class="h3">Resume Match Report</div>${company || 'Unknown Company'}<div class="pre">${matchResultMD}</div>
+    <div class="h3">Resume Match Report</div>${company || 'Unknown Company'}<br>
+    ${jobTitle || ""}<div class="pre">${matchResultMD}</div>
   `;
 }
 
