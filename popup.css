@@ -1,6 +1,8 @@
 body {
   width: 400px;
-  min-height: 120px;
+  box-sizing: border-box;
+  height: 600px;
+  margin: 0;
   padding: 10px;
   color: #e1e1db;
   background-color: #181818;
@@ -59,16 +61,15 @@ button {
   font-size: 1.1em;
   white-space: pre-wrap;
   border-radius: 5px;
-  overflow-y: auto;
 }
 #matchReportBox {
+  overflow: hidden;
+  display: none;
   margin: 5px 0;
   padding: 10px;
   border: 1px solid #ddd;
   border-radius: 5px;
   background-color: #222;
-  overflow-y: auto;
-  display: none;
 }
 .error {
   color: #f55;

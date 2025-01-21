@@ -32,12 +32,14 @@ document.getElementById('closePopupBtn').addEventListener('click', () => {
 });
 
 function handleError(message, error = new Error()) {
+  const matchReportBox = document.getElementById('matchReportBox');
+
   console.error(message, error);
-  document.getElementById('matchReportBox').style.display = 'block';
+  matchReportBox.style.display = 'block';
 
   const div = document.createElement('div');
   div.innerHTML = `<p class="error">${message}<br>Error: ${error.message}</p>`;
-  document.getElementById('matchReportBox').appendChild(div);
+  matchReportBox.appendChild(div);
 }
 
 function extractJobDetails() {
@@ -86,8 +88,8 @@ ${jobDetails.description}
 """
 
 Resume Skills Summary:
-- SKILLS: Java, Spring Boot, Python, PyTorch, Pandas, PHP, Node.js, Javascript, React, LitElement, jQuery, REST API, Git, CSS, HTML, MySQL, DynamoDB, Hive, HQL+, Airflow, Docker, Grails, Gradle, Groovy, Android SDK
-- CERTIFICATION: Udacity Nanodegree - AI Programming with Python, Baeldung Certificate - Java Spring, AWS Certified Developer – Associate, AWS Serverless – Badge
+- SKILLS: Java, Spring Boot, Python, PyTorch, Pandas, PHP, Node.js, Javascript, React, REST API, LitElement, jQuery, Git, CSS, HTML, SQL, NoSQL, MySQL, DynamoDB, Hive, HQL+, Airflow, Docker, Grails, Gradle, Groovy, Android SDK
+- CERTIFICATION: Udacity Nanodegree - AI Programming with Python, Baeldung Certificate - Java Spring, AWS Certified Developer - Associate, AWS Serverless - Badge
 
 Provide a brief report with the following sections:
 1. **Match percentage**: A single percentage value for skills match, without explanation.
@@ -97,7 +99,7 @@ Provide a brief report with the following sections:
         }
       ],
       max_tokens: 300,
-      temperature: 0.2
+      temperature: 0.1
     })
   });
 
@@ -142,17 +144,27 @@ async function matchResumeToJobDescription() {
       return handleError(`Invalid response: ${responseBody}`);
     }
 
-    const matchResult = data.choices[0].message.content;
-    document.getElementById('matchReportBox').style.display = 'block';
-    document.getElementById('matchReportBox').innerHTML = "";
+    const matchReportBox = document.getElementById('matchReportBox');
+    matchReportBox.style.transition = 'none';
+    matchReportBox.style.display = 'none';
+    matchReportBox.style.height = 0;
+    matchReportBox.innerHTML = "";
 
+    const matchResult = data.choices[0].message.content;
     const matchReport = document.createElement('div');
     matchReport.id = 'matchReport';
     matchReport.innerHTML = formatMatchReport(jobDetails.company, jobDetails.title, matchResult);
-    document.getElementById('matchReportBox').appendChild(matchReport);
-    
+    matchReportBox.appendChild(matchReport);
+
+    // start animation
+    setTimeout(() => {
+      matchReportBox.style.transition = 'height 0.7s ease-out';
+      matchReportBox.style.display = 'block';
+      matchReportBox.style.height = matchReport.scrollHeight + 'px';
+    }, 20);
+
     const matchReportHTML = getStyleTagForInjection()
-      + document.getElementById('matchReportBox').outerHTML;
+      + matchReportBox.outerHTML;
 
     injectMatchReportIntoActiveTab(matchReportHTML);
     
@@ -175,9 +187,12 @@ function formatMatchReport(company, jobTitle, matchResult) {
 
 function getStyleTagForInjection() {
   return `<style>
-    .pre { column-count: 2; margin: 1em 0 0 0; font-size: 1.1em; white-space: pre-wrap; border-radius: 5px; overflow-y: auto; }
+    .pre { column-count: 2;
+      margin: 1em 0 0 0; font-size: 1.1em; white-space: pre-wrap; border-radius: 5px; }
     .h3 { font-size: 1.26em; font-weight: bold; display: flex; align-items: center; }
-    #matchReportBox { margin: 5px 0; padding: 10px; border: 1px solid #ddd; border-radius: 5px; background-color: #222; overflow-y: auto; display: none; }
+    #matchReportBox { box-sizing: content-box;
+      overflow: hidden; display: none; margin: 5px 0; padding: 10px;
+      border: 1px solid #ddd; border-radius: 5px; background-color: #222; }
   </style>`;
 }
 

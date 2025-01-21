@@ -65,6 +65,15 @@ function injectMatchReport(request, sendResponse) {
   div.id = 'jobSkillsMatcher';
   div.innerHTML = request.matchReportHTML;
   targetParent.appendChild(div);
+
+  // start animation
+  setTimeout(() => {
+    const matchReport = document.getElementById('matchReport');
+    const matchReportBox = document.getElementById('matchReportBox');
+    matchReportBox.style.transition = 'height 0.7s ease-out';
+    matchReportBox.style.display = 'block';
+    matchReportBox.style.height = matchReport.scrollHeight + 'px';
+  }, 150);
   
   sendResponse({ success: true, message: 'Job Skills Matcher report appended' });
 }
