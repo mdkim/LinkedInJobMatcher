@@ -32,35 +32,39 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     }
  
     sendResponse({ jobDetails: jobDetails });
-  } else if (request.action === 'appendElement') {
-    const leftoverMatchDiv = document.querySelector('#matchReportDiv');
-    if (leftoverMatchDiv) {
-      leftoverMatchDiv.remove();
-    }
-
-    //const parentDiv = document.querySelector('.job-details-jobs-unified-top-card__container--two-pane');
-    const saveButtons = document.querySelectorAll('.jobs-save-button');
-    let targetParent;
-    for (const saveButton of saveButtons) {
-      const displayFlex = saveButton.parentElement;
-      const mt4Element = displayFlex?.parentElement;
-      const potentialTarget  = mt4Element?.parentElement;
-      if (mt4Element?.classList.contains('mt4')) {
-        targetParent = potentialTarget;
-        break;
-      }
-    }
-    if (!targetParent) {
-      sendResponse({ success: false, message: 'Save(d) Job button not found' });
-      return;
-    }
-
-    const matchReportDiv = document.createElement('div');
-    matchReportDiv.id = 'matchReportDiv';
-    matchReportDiv.innerHTML = request.matchReportHTML;
-    targetParent.appendChild(matchReportDiv);
-    sendResponse({ success: true, message: 'matchReport appended' });
+  } else if (request.action === 'injectMatchReport') {
+    injectMatchReport(request, sendResponse);
   }
 
   return true;
 });
+
+function injectMatchReport(request, sendResponse) {
+  const leftoverMatchDiv = document.querySelector('#jobSkillsMatcher');
+  if (leftoverMatchDiv) {
+    leftoverMatchDiv.remove();
+  }
+
+  const saveButtons = document.querySelectorAll('.jobs-save-button');
+  let targetParent;
+  for (const saveButton of saveButtons) {
+    const displayFlex = saveButton.parentElement;
+    const mt4Element = displayFlex?.parentElement;
+    const potentialTarget  = mt4Element?.parentElement;
+    if (mt4Element?.classList.contains('mt4')) {
+      targetParent = potentialTarget;
+      break;
+    }
+  }
+  if (!targetParent) {
+    sendResponse({ success: false, message: 'Save(d) Job button not found' });
+    return;
+  }
+
+  const div = document.createElement('div');
+  div.id = 'jobSkillsMatcher';
+  div.innerHTML = request.matchReportHTML;
+  targetParent.appendChild(div);
+  
+  sendResponse({ success: true, message: 'Job Skills Matcher report appended' });
+}

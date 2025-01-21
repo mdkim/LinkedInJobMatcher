@@ -4,7 +4,7 @@ loadApiKey((apiKey) => {
 });
 const API_URL = 'https://api.openai.com/v1/chat/completions';
 const MODEL = 'gpt-3.5-turbo';
-const DEBUG = true;
+const DEBUG = false;
 
 function debugLog(...args) {
   if (!DEBUG) return;
@@ -33,11 +33,11 @@ document.getElementById('closePopupBtn').addEventListener('click', () => {
 
 function handleError(message, error = new Error()) {
   console.error(message, error);
-  document.getElementById('matchReport').style.display = 'block';
+  document.getElementById('matchReportBox').style.display = 'block';
 
   const div = document.createElement('div');
   div.innerHTML = `<p class="error">${message}<br>Error: ${error.message}</p>`;
-  document.getElementById('matchReport').appendChild(div);
+  document.getElementById('matchReportBox').appendChild(div);
 }
 
 function extractJobDetails() {
@@ -90,20 +90,20 @@ Resume Skills Summary:
 - CERTIFICATION: Udacity Nanodegree - AI Programming with Python, Baeldung Certificate - Java Spring, AWS Certified Developer – Associate, AWS Serverless – Badge
 
 Provide a brief report with the following sections:
-1. **Match percentage**: A single percentage value without explanation.
+1. **Match percentage**: A single percentage value for skills match, without explanation.
 2. **Skills matches**: A list of skills and certifications from the resume that closely matches with the job description.
 3. **Missing skills**: A list of skills in the job description that are missing from the resume skills summary.
-4. **Additional notes**: Without repeating any information in the report above, briefly list any other relevant information or observations not covered already.`
+4. **Additional notes**: Without repeating any information in the report above, briefly list any other observations not covered already about the job being a good fit.`
         }
       ],
       max_tokens: 300,
-      temperature: 0.3
+      temperature: 0.2
     })
   });
 
   const responseBody = await response.text();
 
-  console.group('OpenAI API Response for Resume Match Analysis');
+  console.group('OpenAI API Response for Job Skills Match Analysis');
   debugLog('Response Status:', response.status);
   debugLog('Response Headers:', Object.fromEntries(response.headers.entries()));
   debugLog('Response Body:', responseBody);
@@ -143,34 +143,18 @@ async function matchResumeToJobDescription() {
     }
 
     const matchResult = data.choices[0].message.content;
-    document.getElementById('matchReport').style.display = 'block';
-    document.getElementById('matchReport').innerHTML = "";
+    document.getElementById('matchReportBox').style.display = 'block';
+    document.getElementById('matchReportBox').innerHTML = "";
 
-    const matchDiv = document.createElement('div');
-    matchDiv.id = 'matchDiv';
-    matchDiv.innerHTML = formatMatchReport(jobDetails.company, jobDetails.title, matchResult);
-    document.getElementById('matchReport').appendChild(matchDiv);
+    const matchReport = document.createElement('div');
+    matchReport.id = 'matchReport';
+    matchReport.innerHTML = formatMatchReport(jobDetails.company, jobDetails.title, matchResult);
+    document.getElementById('matchReportBox').appendChild(matchReport);
     
-    const matchReportHTML = `<style>
-      .pre { column-count: 2; margin: 1em 0 0 0; font-size: 1.1em; white-space: pre-wrap; border-radius: 5px; overflow-y: auto; }
-      .h3 { font-size: 1.26em; font-weight: bold; }
-      #matchReport { margin: 5px 0; padding: 10px; border: 1px solid #ddd; border-radius: 5px; background-color: #222; overflow-y: auto; display: none; }
-      </style>
-    ` + document.getElementById('matchReport').outerHTML;
+    const matchReportHTML = getStyleTagForInjection()
+      + document.getElementById('matchReportBox').outerHTML;
 
-    // inject match report into active tab
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      const activeTab = tabs[0];
-      chrome.tabs.sendMessage(activeTab.id,
-        { action: 'appendElement', matchReportHTML: matchReportHTML },
-        (response) => {
-          if (response?.success) {
-              debugLog(response.message);
-          } else {
-              handleError(response?.message || 'Failed to send message');
-          }
-      });
-    });
+    injectMatchReportIntoActiveTab(matchReportHTML);
     
     return matchResult;
   } catch (error) {
@@ -183,12 +167,36 @@ async function matchResumeToJobDescription() {
 function formatMatchReport(company, jobTitle, matchResult) {
   const matchResultMD = matchResult.replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>");
   return `
-    <div class="h3">Resume Match Report</div>${company || 'Unknown Company'}<br>
-    ${jobTitle || ""}<div class="pre">${matchResultMD}</div>
+    <div class="h3"><img src="${chrome.runtime.getURL('images/icon16.png')}">&nbsp;
+    Job Skills Match Report</div>${company || 'Unknown Company'}<br>
+    <em>${jobTitle || ""}</em><div class="pre">${matchResultMD}</div>
   `;
 }
 
-// resumeMatchBtn handler
+function getStyleTagForInjection() {
+  return `<style>
+    .pre { column-count: 2; margin: 1em 0 0 0; font-size: 1.1em; white-space: pre-wrap; border-radius: 5px; overflow-y: auto; }
+    .h3 { font-size: 1.26em; font-weight: bold; display: flex; align-items: center; }
+    #matchReportBox { margin: 5px 0; padding: 10px; border: 1px solid #ddd; border-radius: 5px; background-color: #222; overflow-y: auto; display: none; }
+  </style>`;
+}
+
+function injectMatchReportIntoActiveTab(matchReportHTML) {
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    const activeTab = tabs[0];
+    chrome.tabs.sendMessage(activeTab.id, 
+      { action: 'injectMatchReport', matchReportHTML: matchReportHTML },
+      (response) => {
+        if (response?.success) {
+          debugLog(response.message);
+        } else {
+          handleError(response?.message || 'Failed to send message');
+        }
+    });
+  });
+}
+
+// matchBtn handler
 document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('resumeMatchBtn').addEventListener('click', matchResumeToJobDescription);
+  document.getElementById('matchBtn').addEventListener('click', matchResumeToJobDescription);
 });

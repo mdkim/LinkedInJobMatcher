@@ -15,10 +15,14 @@ div, button {
   font-size: 1.5em;
   font-weight: bold;
   margin-bottom: 5px;
+  display: flex;
+  align-items: center;
 }
 .h3 {
   font-size: 1.26em;
   font-weight: bold;
+  display: flex;
+  align-items: center;
 }
 #closePopupBtn {
   position: absolute;
@@ -57,7 +61,7 @@ button {
   border-radius: 5px;
   overflow-y: auto;
 }
-#matchReport {
+#matchReportBox {
   margin: 5px 0;
   padding: 10px;
   border: 1px solid #ddd;

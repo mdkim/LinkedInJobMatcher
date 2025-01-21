@@ -2,8 +2,8 @@
 
 ## Key Features
 - 🌟 Extract job details from LinkedIn
-- 🤖 Leverage AI for intelligent resume matching
-- 📈 Instantly assess skill alignment with job descriptions
+- 🤖 Leverage AI for intelligent resume job skills matching
+- 📈 Instantly assess skills alignment with job descriptions
 
 ## Getting Started
 1. **Prerequisites**
@@ -30,28 +30,26 @@ chrome.storage.local.get(['OPENAI_API_KEY'], (result) => {
 ## How to Use
 1. Visit a LinkedIn job listing
 2. Click the extension icon in the browser toolbar
-3. Receive a comprehensive AI-generated resume match report:
+3. Receive a comprehensive AI-generated resume job skills match report:
    - **Match percentage**: percentage of skills in the job description found in the resume
    - **Skills matches**: list of skills and certifications from the resume that closely matches with the job description
-   - **Missing skills**: list of skills and certifications in the job description not found in the resume
-   - **Additional notes**: any additional insights or recommendations from the AI model
+   - **Missing skills**: list of skills and certifications in the job description not found in the resume skills summary
+   - **Additional notes**: any additional insights or recommendations from the AI
 
 ## Supported Platforms
 - LinkedIn Jobs
-- Expandable to other job platforms
+- (Expandable to other job platforms)
 
 ## Technical Overview
 - **Technologies Used**: JavaScript, Chrome Extension API, OpenAI GPT-3.5 Turbo
 - **Configuration**: Adjust `DEBUG` flag in `popup.js` for detailed logging
 
-## Challenges & Considerations
-- Manual setup of OpenAI API key required
-- Accuracy influenced by resume content
-- Adaptability to changing web structures
-
 ## Future Enhancements
-- Broader job platform support
-- User-friendly resume input interface
+- Create API backend allowing for free OpenAI API key
+  - Account signup/login to track usage, credits
+- Resume Skills Summary input interface
+  - (With character limit, unlimited if using own API key)
+- Broader job board support
 - Improved AI matching algorithms
 
 ## License
