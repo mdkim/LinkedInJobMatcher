@@ -27,10 +27,6 @@ function loadApiKey(callback) {
   }
 };
 
-document.getElementById('closePopupBtn').addEventListener('click', () => {
-  window.close();
-});
-
 function handleError(message, error = new Error()) {
   const matchReportBox = document.getElementById('matchReportBox');
 
@@ -89,17 +85,18 @@ ${jobDetails.description}
 
 Resume Skills Summary:
 - SKILLS: Java, Spring Boot, Python, PyTorch, Pandas, PHP, Node.js, Javascript, React, REST API, LitElement, jQuery, Git, CSS, HTML, SQL, NoSQL, MySQL, DynamoDB, Hive, HQL+, Airflow, Docker, Grails, Gradle, Groovy, Android SDK
-- CERTIFICATION: Udacity Nanodegree - AI Programming with Python, Baeldung Certificate - Java Spring, AWS Certified Developer - Associate, AWS Serverless - Badge
+- CERTIFICATIONS: Udacity Nanodegree - AI Programming with Python, Baeldung Certificate - Java Spring, AWS Certified Developer - Associate, AWS Serverless - Badge
 
 Provide a brief report with the following sections:
 1. **Match percentage**: A single percentage value for skills match, without explanation.
 2. **Skills matches**: A list of skills and certifications from the resume that closely matches with the job description.
-3. **Missing skills**: A list of skills in the job description that are missing from the resume skills summary.
+3. **Missing skills**: Important: Exclude from this section any skills that are listed in the resume skills summary!
+Only list the skills in the job description that are missing from the resume skills summary.
 4. **Additional notes**: Without repeating any information in the report above, briefly list any other observations not covered already about the job being a good fit.`
         }
       ],
       max_tokens: 300,
-      temperature: 0.1
+      temperature: 0.3
     })
   });
 
@@ -145,35 +142,40 @@ async function matchResumeToJobDescription() {
     }
 
     const matchReportBox = document.getElementById('matchReportBox');
-    matchReportBox.style.transition = 'none';
-    matchReportBox.style.display = 'none';
-    matchReportBox.style.height = 0;
-    matchReportBox.innerHTML = "";
-
     const matchResult = data.choices[0].message.content;
     const matchReport = document.createElement('div');
-    matchReport.id = 'matchReport';
-    matchReport.innerHTML = formatMatchReport(jobDetails.company, jobDetails.title, matchResult);
-    matchReportBox.appendChild(matchReport);
+    updateMatchReportBox(matchReportBox, matchResult, matchReport, jobDetails);
 
-    // start animation
-    setTimeout(() => {
-      matchReportBox.style.transition = 'height 0.7s ease-out';
-      matchReportBox.style.display = 'block';
-      matchReportBox.style.height = matchReport.scrollHeight + 'px';
-    }, 20);
+    if (jobDetails.type === 'linkedin') {
+      const matchReportHTML = getStyleTagForInjection()
+        + matchReportBox.outerHTML;
+      injectMatchReportIntoActiveTab(matchReportHTML);
+    }
 
-    const matchReportHTML = getStyleTagForInjection()
-      + matchReportBox.outerHTML;
-
-    injectMatchReportIntoActiveTab(matchReportHTML);
-    
     return matchResult;
   } catch (error) {
     return handleError("Resume match error", error);
   } finally {
     loadingSpinner.style.display = 'none';
   }
+}
+
+function updateMatchReportBox(matchReportBox, matchResult, matchReport, jobDetails) {
+  matchReportBox.style.transition = 'none';
+  matchReportBox.style.display = 'none';
+  matchReportBox.style.height = 0;
+  matchReportBox.innerHTML = "";
+
+  matchReport.id = 'matchReport';
+  matchReport.innerHTML = formatMatchReport(jobDetails.company, jobDetails.title, matchResult);
+  matchReportBox.appendChild(matchReport);
+
+  // start animation
+  setTimeout(() => {
+    matchReportBox.style.transition = 'height 0.7s ease-out';
+    matchReportBox.style.display = 'block';
+    matchReportBox.style.height = matchReport.scrollHeight + 'px';
+  }, 20);
 }
 
 function formatMatchReport(company, jobTitle, matchResult) {
@@ -199,8 +201,9 @@ function getStyleTagForInjection() {
 function injectMatchReportIntoActiveTab(matchReportHTML) {
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     const activeTab = tabs[0];
-    chrome.tabs.sendMessage(activeTab.id, 
-      { action: 'injectMatchReport', matchReportHTML: matchReportHTML },
+    chrome.tabs.sendMessage(activeTab.id, {
+        action: 'injectMatchReport', matchReportHTML: matchReportHTML
+      },
       (response) => {
         if (response?.success) {
           debugLog(response.message);
@@ -211,7 +214,26 @@ function injectMatchReportIntoActiveTab(matchReportHTML) {
   });
 }
 
-// matchBtn handler
+// matchBtn, closePoopupBtn handlers
 document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('closePopupBtn').addEventListener('click', () => {
+    window.close();
+  }),  
   document.getElementById('matchBtn').addEventListener('click', matchResumeToJobDescription);
+});
+
+// inject content script on active tab page load
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+  if (!tab.active || changeInfo.status !== 'complete') {
+    return;
+  }
+  chrome.scripting.executeScript({
+    target: { tabId: tabId }, files: ['content.js']
+  }, () => {
+    if (chrome.runtime.lastError) {
+      handleError('Error injecting script:', chrome.runtime.lastError);
+    } else {
+      console.log('Content script injected');
+    }
+  });
 });

@@ -8,15 +8,21 @@ function extractLinkedInJobDetails() {
     title: jobTitleEl ? jobTitleEl.textContent.trim() : 'N/A',
     company: companyNameEl ? companyNameEl.textContent.trim() : 'N/A',
     location: locationEl ? locationEl.textContent.trim() : 'N/A',
-    description: jobDescriptionEl ? jobDescriptionEl.innerText.trim() : 'N/A'
+    description: jobDescriptionEl ? jobDescriptionEl.innerText.trim() : 'N/A',
+    type: 'linkedin'
   };
 }
 
 function extractGenericJobDetails() {
+  console.group("Generic job details");
+  console.log(document.body.innerText);
+  console.groupEnd();
   return {
-    title: document.title,
-    url: window.location.href,
-    pageText: document.body.innerText
+    title: "Unknown",
+    company: "Unknown",
+    location: "Unknown",
+    description: document.body.innerText,
+    type: 'generic'
   };
 }
 

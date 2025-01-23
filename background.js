@@ -1,3 +1,3 @@
 chrome.runtime.onInstalled.addListener(() => {
-  console.log('LinkedIn Job Skills Matcher Extension Installed');
+  console.log('LinkedIn Job Skills Matcher Extension installed');
 });

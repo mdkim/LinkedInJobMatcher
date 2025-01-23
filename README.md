@@ -5,7 +5,7 @@
 - 🤖 Leverage AI for intelligent resume job skills matching
 - 📈 Instantly assess skills alignment with job descriptions
 
-![Screenshot of Chrome extension](https://i.imgur.com/nVzXAcz.gif)
+![Screenshot of Chrome extension](https://i.imgur.com/vSWj95R.gif)
 
 ## Getting Started
 1. **Prerequisites**
