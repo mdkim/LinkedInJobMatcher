@@ -72,11 +72,24 @@ async function fetchMatchReport(jobDetails) {
       messages: [
         {
           role: "system", 
-          content: "You are a software engineering recruiter providing concise, bullet-pointed reports comparing a resume skills summary to a job description."
+          content: "You are a software engineering recruiter providing concise, bullet-pointed reports comparing a Job Description to a Resume Skills Summary."
         },
         {
           role: "user",
-          content: `Analyze this job description and provide a concise match report against a resume skills summary, focusing on hard skills and specific high level skills. If the job description lacks skills content, skip providing sections 1-4 and only report that the job description is invalid.
+          content: `Analyze the Job Description below and provide a concise match report against the Resume Skills Summary below.
+First, prepare by extracting a list of all skills explicitly named in the Job Description.
+Then compare this list to the skills and certifications in the Resume Skills Summary.
+Use this pre-report analysis prepared above to generate the report below.
+
+Provide a brief report with the following sections:
+1. **Match percentage**: A single percentage value for skills match, without explanation.
+2. **Skills matches**:
+   - ONLY include matches from this filtered list in the "Skills matches" section!
+   - List skills that are explicitly named in the Job Description that closely matches with the Resume Skills Summary.
+3. **Missing skills**:
+   - Exclude from the "Missing skills" section any skills that are present in the Resume Skills Summary!
+   - List skills in the Job Description that are missing from the Resume Skills Summary.
+4. **Additional notes**: Without repeating any information in the report above, briefly list any other observations not covered already about the job being a good fit.
 
 Job Description:
 """
@@ -84,15 +97,11 @@ ${jobDetails.description}
 """
 
 Resume Skills Summary:
+"""
 - SKILLS: Java, Spring Boot, Python, PyTorch, Pandas, PHP, Node.js, Javascript, React, REST API, LitElement, jQuery, Git, CSS, HTML, SQL, NoSQL, MySQL, DynamoDB, Hive, HQL+, Airflow, Docker, Grails, Gradle, Groovy, Android SDK
 - CERTIFICATIONS: Udacity Nanodegree - AI Programming with Python, Baeldung Certificate - Java Spring, AWS Certified Developer - Associate, AWS Serverless - Badge
-
-Provide a brief report with the following sections:
-1. **Match percentage**: A single percentage value for skills match, without explanation.
-2. **Skills matches**: A list of skills and certifications from the resume that closely matches with the job description.
-3. **Missing skills**: Important: Exclude from this section any skills that are listed in the resume skills summary!
-Only list the skills in the job description that are missing from the resume skills summary.
-4. **Additional notes**: Without repeating any information in the report above, briefly list any other observations not covered already about the job being a good fit.`
+"""
+`
         }
       ],
       max_tokens: 300,
