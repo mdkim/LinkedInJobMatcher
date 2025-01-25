@@ -6,6 +6,8 @@ const API_URL = 'https://api.openai.com/v1/chat/completions';
 const MODEL = 'gpt-3.5-turbo';
 const DEBUG = false;
 
+const CHROME_CONNECTION_ERROR = 'Could not establish connection. Receiving end does not exist.';
+
 function debugLog(...args) {
   if (!DEBUG) return;
   console.log(...args);
@@ -38,14 +40,25 @@ function handleError(message, error = new Error()) {
   matchReportBox.appendChild(div);
 }
 
-function extractJobDetails() {
+function extractJobDetails(retries = 0) {
   return new Promise((resolve, reject) => {
     chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
-      chrome.tabs.sendMessage(tabs[0].id, {action: "extractJobDetails"}, (response) => {
+      const tabId = tabs[0].id;
+      chrome.tabs.sendMessage(tabId, {action: "extractJobDetails"}, (response) => {
         if (chrome.runtime.lastError) {
-          handleError('Runtime error', chrome.runtime.lastError);
-          reject(chrome.runtime.lastError);
-          return;
+          // this is a hacky way to retry, requires clicking "Match" twice
+          // if extension is reloaded after active tab is loaded,
+          // possibly because of async confusion on my part
+          if (chrome.runtime.lastError.message === CHROME_CONNECTION_ERROR
+            && retries < 2
+          ) {
+            injectContentScript(tabId);
+            return extractJobDetails(++retries);
+          } else {
+            handleError('Runtime error', chrome.runtime.lastError);
+            reject(chrome.runtime.lastError);
+            return;
+          }
         }
 
         if (response && response.jobDetails) {
@@ -231,11 +244,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('matchBtn').addEventListener('click', matchResumeToJobDescription);
 });
 
-// inject content script on active tab page load
-chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-  if (!tab.active || changeInfo.status !== 'complete') {
-    return;
-  }
+function injectContentScript(tabId) {
   chrome.scripting.executeScript({
     target: { tabId: tabId }, files: ['content.js']
   }, () => {
@@ -245,4 +254,12 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
       console.log('Content script injected');
     }
   });
+}
+
+// inject content script on active tab page load
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+  if (!tab.active || changeInfo.status !== 'complete') {
+    return;
+  }
+  injectContentScript(tabId);
 });
