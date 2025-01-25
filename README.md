@@ -20,12 +20,12 @@
    - Store your OpenAI API Key in Chrome's local storage
 
 ```javascript   
-chrome.storage.local.set({ OPENAI_API_KEY: '<your_api_key>' },
+chrome.storage.local.set({ OPENAI_API_KEY: "<your_api_key>" },
   () => {
-    console.log('API key stored successfully!');
+    console.log("API key stored successfully!");
   });
 chrome.storage.local.get(['OPENAI_API_KEY'], (result) => {
-  console.log('Stored API key:', result.OPENAI_API_KEY);
+  console.log("Stored API key:", result.OPENAI_API_KEY);
 });
 ```
 
@@ -43,7 +43,7 @@ chrome.storage.local.get(['OPENAI_API_KEY'], (result) => {
 - (Expandable to other job platforms)
 
 ## Technical Overview
-- **Technologies Used**: JavaScript, Chrome Extension API, OpenAI GPT-3.5 Turbo
+- **Technologies Used**: JavaScript, Chrome Extension API, OpenAI GPT-4o mini
 - **Configuration**: Adjust `DEBUG` flag in `popup.js` for detailed logging
 
 ## Future Enhancements

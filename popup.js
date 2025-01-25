@@ -2,11 +2,13 @@ let OPENAI_API_KEY;
 loadApiKey((apiKey) => {
   OPENAI_API_KEY = apiKey;
 });
-const API_URL = 'https://api.openai.com/v1/chat/completions';
-const MODEL = 'gpt-3.5-turbo';
+const API_URL = "https://api.openai.com/v1/chat/completions";
+const MODEL = 'gpt-4o-mini';
+//const API_URL = "https://api.deepinfra.com/v1/openai/chat/completions";
+//const MODEL = 'meta-llama/Llama-3.3-70B-Instruct-Turbo';
 const DEBUG = false;
 
-const CHROME_CONNECTION_ERROR = 'Could not establish connection. Receiving end does not exist.';
+const CHROME_CONNECTION_ERROR = "Could not establish connection. Receiving end does not exist.";
 
 function debugLog(...args) {
   if (!DEBUG) return;
@@ -18,14 +20,14 @@ function loadApiKey(callback) {
   try {
     chrome.storage.local.get('OPENAI_API_KEY', (result) => {
       if (!result.OPENAI_API_KEY) {
-        handleError('OpenAI API Key not found in local storage');
+        handleError("OpenAI API Key not found in local storage");
         return;
       }
       OPENAI_API_KEY = result.OPENAI_API_KEY;
       callback(OPENAI_API_KEY);
     });
   } catch (error) {
-    handleError('Error accessing local storage', error);
+    handleError("Error accessing local storage", error);
   }
 };
 
@@ -55,7 +57,7 @@ function extractJobDetails(retries = 0) {
             injectContentScript(tabId);
             return extractJobDetails(++retries);
           } else {
-            handleError('Runtime error', chrome.runtime.lastError);
+            handleError("Runtime error", chrome.runtime.lastError);
             reject(chrome.runtime.lastError);
             return;
           }
@@ -64,7 +66,7 @@ function extractJobDetails(retries = 0) {
         if (response && response.jobDetails) {
           resolve(response.jobDetails);
         } else {
-          reject(new Error('No job details found'));
+          reject(new Error("No job details found"));
         }
       });
     });
@@ -97,12 +99,12 @@ Use this pre-report analysis prepared above to generate the report below.
 Provide a brief report with the following sections:
 1. **Match percentage**: A single percentage value for skills match, without explanation.
 2. **Skills matches**:
-   - ONLY include matches from this filtered list in the "Skills matches" section!
+   - ONLY include matches from the pre-report analysis above in the "Skills matches" section!
    - List skills that are explicitly named in the Job Description that closely matches with the Resume Skills Summary.
 3. **Missing skills**:
    - Exclude from the "Missing skills" section any skills that are present in the Resume Skills Summary!
-   - List skills in the Job Description that are missing from the Resume Skills Summary.
-4. **Additional notes**: Without repeating any information in the report above, briefly list any other observations not covered already about the job being a good fit.
+   - List skills in the Job Description from the pre-report analysis above that are missing from the Resume Skills Summary.
+4. **Additional notes**: Without repeating any information in the match report above, briefly list any other observations not covered already about the job being a good fit.
 
 Job Description:
 """
@@ -124,19 +126,19 @@ Resume Skills Summary:
 
   const responseBody = await response.text();
 
-  console.group('OpenAI API Response for Job Skills Match Analysis');
-  debugLog('Response Status:', response.status);
-  debugLog('Response Headers:', Object.fromEntries(response.headers.entries()));
-  debugLog('Response Body:', responseBody);
+  console.group("OpenAI API Response for Job Skills Match Analysis");
+  debugLog("Response Status:", response.status);
+  debugLog("Response Headers:", Object.fromEntries(response.headers.entries()));
+  debugLog("Response Body:", responseBody);
   console.groupEnd();
 
   if (!response.ok) {
-    let errorMessage = 'Unknown API error occurred';
+    let errorMessage = "Unknown API error occurred";
     try {
       const errorJson = JSON.parse(responseBody);
       errorMessage = errorJson.error?.message || errorMessage;
     } catch (parseError) {
-      handleError('Error parsing error response', parseError);
+      handleError("Error parsing error response", parseError);
     }
     return handleError(`OpenAI API Error: ${errorMessage}`);
   }
@@ -149,7 +151,7 @@ async function matchResumeToJobDescription() {
   try {
     jobDetails = await extractJobDetails();
   } catch (error) {
-    return handleError('Could not extract job details', error);
+    return handleError("Could not extract job details", error);
   }
 
   try {
@@ -158,7 +160,6 @@ async function matchResumeToJobDescription() {
     const responseBody = await fetchMatchReport(jobDetails);
 
     const data = JSON.parse(responseBody);
-    
     if (!(data.choices && data.choices[0] && data.choices[0].message)) {
       return handleError(`Invalid response: ${responseBody}`);
     }
@@ -201,10 +202,11 @@ function updateMatchReportBox(matchReportBox, matchResult, matchReport, jobDetai
 }
 
 function formatMatchReport(company, jobTitle, matchResult) {
-  const matchResultMD = matchResult.replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>");
+  const matchResultMD = matchResult.replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>")
+    .replace(/^### Match Report\n\n/, '');
   return `
-    <div class="h3"><img src="${chrome.runtime.getURL('images/icon16.png')}">&nbsp;
-    Job Skills Match Report</div>${company || 'Unknown Company'}<br>
+    <div class="h3"><img src="${chrome.runtime.getURL("images/icon16.png")}">&nbsp;
+    Job Skills Match Report</div>${company || "Unknown Company"}<br>
     <em>${jobTitle || ""}</em><div class="pre">${matchResultMD}</div>
   `;
 }
@@ -230,7 +232,7 @@ function injectMatchReportIntoActiveTab(matchReportHTML) {
         if (response?.success) {
           debugLog(response.message);
         } else {
-          handleError(response?.message || 'Failed to send message');
+          handleError(response?.message || "Failed to send message");
         }
     });
   });
@@ -249,9 +251,9 @@ function injectContentScript(tabId) {
     target: { tabId: tabId }, files: ['content.js']
   }, () => {
     if (chrome.runtime.lastError) {
-      handleError('Error injecting script:', chrome.runtime.lastError);
+      handleError("Error injecting script:", chrome.runtime.lastError);
     } else {
-      console.log('Content script injected');
+      console.log("Content script injected");
     }
   });
 }

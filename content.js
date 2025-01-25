@@ -32,7 +32,7 @@ function extractXJobDetails() {
 
 function getXParentDiv() {
   const applyNowNode = Array.from(document.querySelectorAll('a div[dir="ltr"] span span'))
-    .find(node => node.textContent.trim() === 'Apply now');
+    .find(node => node.textContent.trim() === "Apply now");
   return divParent = applyNowNode.closest('a').parentNode;
 }
 
@@ -79,7 +79,7 @@ function injectMatchReport(request, sendResponse) {
   div.id = 'jobSkillsMatcher';
   div.innerHTML = request.matchReportHTML;
 
-  if (window.location.href.includes('linkedin.com/jobs')) {
+  if (window.location.href.includes("linkedin.com/jobs")) {
     const saveButtons = document.querySelectorAll('.jobs-save-button');
     let targetParent;
     for (const saveButton of saveButtons) {
@@ -91,11 +91,11 @@ function injectMatchReport(request, sendResponse) {
       }
     }
     if (!targetParent) {
-      sendResponse({ success: false, message: 'Save(d) Job button not found' });
+      sendResponse({ success: false, message: "Save(d) Job button not found" });
       return;
     }
     targetParent.appendChild(div);
-  } else if (window.location.href.includes('x.com/jobs')) {
+  } else if (window.location.href.includes("x.com/jobs")) {
     div.style.padding = '24px';
     div.style.fontFamily = "ui-sans-serif, system-ui, sans-serif";
     div.style.fontSize = '12px';
@@ -112,5 +112,5 @@ function injectMatchReport(request, sendResponse) {
     matchReportBox.style.height = matchReport.scrollHeight + 'px';
   }, 150);
   
-  sendResponse({ success: true, message: 'Job Skills Matcher report appended' });
+  sendResponse({ success: true, message: "Job Skills Matcher report appended" });
 }
