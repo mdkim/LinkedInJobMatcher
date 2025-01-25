@@ -155,7 +155,7 @@ async function matchResumeToJobDescription() {
     const matchReport = document.createElement('div');
     updateMatchReportBox(matchReportBox, matchResult, matchReport, jobDetails);
 
-    if (jobDetails.type === 'linkedin') {
+    if (['linkedin', 'x'].includes(jobDetails.type)) {
       const matchReportHTML = getStyleTagForInjection()
         + matchReportBox.outerHTML;
       injectMatchReportIntoActiveTab(matchReportHTML);
@@ -201,7 +201,7 @@ function getStyleTagForInjection() {
     .pre { column-count: 2;
       margin: 1em 0 0 0; font-size: 1.1em; white-space: pre-wrap; border-radius: 5px; }
     .h3 { font-size: 1.26em; font-weight: bold; display: flex; align-items: center; }
-    #matchReportBox { box-sizing: content-box;
+    #matchReportBox { box-sizing: content-box; font-family: inherit;
       overflow: hidden; display: none; margin: 5px 0; padding: 10px;
       border: 1px solid #ddd; border-radius: 5px; background-color: #222; }
   </style>`;

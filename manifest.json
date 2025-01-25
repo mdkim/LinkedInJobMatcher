@@ -27,7 +27,10 @@
   }],
   "web_accessible_resources": [{
     "resources": ["images/icon16.png"],
-    "matches": ["https://www.linkedin.com/*"]
+    "matches": [
+      "https://www.linkedin.com/*",
+      "https://x.com/*"
+    ]
   }],
   "host_permissions": ["<all_urls>"]
 }
