@@ -5,7 +5,7 @@
 - 🤖 Leverage AI for intelligent resume job skills matching
 - 📈 Instantly assess skills alignment with job descriptions
 
-![Screenshot of Chrome extension](https://i.imgur.com/vSWj95R.gif)
+![Screen capture of Chrome extension](https://i.imgur.com/0AS7gh7.gif)
 
 ## Getting Started
 1. **Prerequisites**
@@ -55,4 +55,8 @@ chrome.storage.local.get(['OPENAI_API_KEY'], (result) => {
 - Improved AI matching algorithms
 
 ## License
-This project is licensed under the MIT License.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+**Disclaimer**: This extension is not affiliated with, endorsed by, or connected to LinkedIn Corporation. Use at your own risk and in accordance with LinkedIn's Terms of Service.
